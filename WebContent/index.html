@@ -167,10 +167,10 @@
 					keyElement = inputElement.eq(0);
 					valueElement = inputElement.eq(1);
 					
-					tag = "<xs:element name=\""+keyElement.val()+"\">"+
+					tag = "<xs:element name=\""+keyElement.val().replace(" ","")+"\">"+
 							"<xs:complexType>"+
 						      "<xs:sequence>"+
-						        "<xs:element name=\""+valueElement.val()+"\" type=\"xs:string\"/>"+
+						        "<xs:element name=\""+valueElement.val().replace(" ","")+"\" type=\"xs:string\"/>"+
 						      "</xs:sequence>"+
 						    "</xs:complexType>"+
 						  "</xs:element>";					
@@ -195,7 +195,7 @@
           	  	}
 			    
 			    //tag = "<"+bigKeyElement.val()+">"+tag+"</"+bigKeyElement.val()+">";
-			    	 tag="<xs:element name=\""+bigKeyElement.val()+"\">"+
+			    	 tag="<xs:element name=\""+bigKeyElement.val().replace(" ","")+"\">"+
 							"<xs:complexType>"+
 						      "<xs:sequence>"+
 						        tag+
