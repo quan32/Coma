@@ -32,20 +32,24 @@ public class Coma {
 	static final String USER = "root";
 	static final String PASS = "20092137";
 	
-	public static void main(String[] args){
-		Coma coma = new Coma();
-		Result[] result = new Result[6];
-		
-		System.out.println("--------------- Result:\n\n\n");
-		result = coma.match1("sources/product.xsd","PO_abbrevs.txt", "PO_syns.txt");
-		for(int i=0;i<6;i++){
-			System.out.println("product"+(i+1));
-			System.out.println("ID:"+result[i].getId());
-			System.out.println("Value:"+result[i].getValue()+"\n");
-		}
-	}
+//	public static void main(String[] args){
+//		Coma coma = new Coma();
+//		Result[] result = new Result[6];
+//		
+//		System.out.println("--------------- Result:\n\n\n");
+//		result = coma.match1("sources/product.xsd","PO_abbrevs.txt", "PO_syns.txt");
+//		for(int i=0;i<6;i++){
+//			System.out.println("product"+(i+1));
+//			System.out.println("ID:"+result[i].getId());
+//			System.out.println("Value:"+result[i].getValue()+"\n");
+//		}
+//	}
 	
-
+	public Result[] match(){
+		Coma coma = new Coma();
+		
+		return coma.match1(DIR+"sources\\product.xsd",DIR+"PO_abbrevs.txt", DIR+"PO_syns.txt");
+	}
 	
 	public Result[] match1(String fileSrc, String fileAbbreviations, String fileSynonyms){
 		
@@ -101,7 +105,7 @@ public class Coma {
 			
 			while(rs.next()){
 				 //bien de gioi han so luong matching
-				 if(l==10)
+				 if(l==20)
 					 break;
 				 else
 					 l++;
@@ -109,7 +113,7 @@ public class Coma {
 				 
 		         int id  = rs.getInt("id");
 		         String name = rs.getString("name");
-		         fileTrg="sources/"+name;
+		         fileTrg=DIR+"sources\\"+name;
 		         
 		         //Load graph2 and matching
 		 		Graph graphTrg = loadGraph(fileTrg, null);
