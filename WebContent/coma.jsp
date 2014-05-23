@@ -57,7 +57,7 @@
 	Result[] result = new Result[6];
 	JSONObject json = new JSONObject();
 	
-	result = coma.match1("product.xsd");
+	result = coma.match();
 	for(int i=0;i<6;i++){
 		json.put("product"+(i+1), result[i].getId()+"&"+result[i].getValue());
 	}
