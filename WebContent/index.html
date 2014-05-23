@@ -1,0 +1,610 @@
+<html>
+<head>
+<title>Advanced Search</title>
+<script src="js/jquery-1.11.0.min.js"></script>
+<link rel="stylesheet" type="text/css" href="css/index.css">
+<script src="js/jquery.tools.min.js"></script><style type="text/css"></style>
+<link rel="stylesheet" type="text/css" href="css/standalone.css">
+<link rel="stylesheet" type="text/css" href="css/scrollable-horizontal.css">
+<link rel="stylesheet" type="text/css" href="css/scrollable-buttons.css">
+<style type="text/css">
+	
+	#display_product{
+		display: block;
+		-webkit-margin-start: 2px;
+		-webkit-margin-end: 2px;
+		-webkit-padding-before: 0.35em;
+		-webkit-padding-start: 0.75em;
+		-webkit-padding-end: 0.75em;
+		-webkit-padding-after: 0.625em;
+		border: 2px groove threedface;
+		border-image-source: initial;
+		border-image-slice: initial;
+		border-image-width: initial;
+		border-image-outset: initial;
+		border-image-repeat: initial;
+		min-width: -webkit-min-content;
+	}
+	#primary_display{
+		
+	}
+	#primary_display_left{
+		float:left;
+		padding-left: 200px;
+		margin-right: 300px;
+	}
+	#primary_display_right{
+	}
+	#primary_display_center{
+		clear: both;
+	}
+	#secondary_display{
+		margin-top:50px;
+	}
+	level1{
+		display:block;
+		padding-bottom: 30px;
+		padding-top: 30px;
+	}
+	options{
+		display: block;
+		-webkit-margin-start: 2px;
+		-webkit-margin-end: 2px;
+		-webkit-padding-before: 0.35em;
+		-webkit-padding-start: 0.75em;
+		-webkit-padding-end: 0.75em;
+		-webkit-padding-after: 0.625em;
+		border: 2px groove threedface;
+		border-image-source: initial;
+		border-image-slice: initial;
+		border-image-width: initial;
+		border-image-outset: initial;
+		border-image-repeat: initial;
+		min-width: -webkit-min-content;
+	}
+	title{
+		display: block;
+		-webkit-padding-start: 2px;
+		-webkit-padding-end: 2px;
+		border: none;
+		border-image-source: initial;
+		border-image-slice: initial;
+		border-image-width: initial;
+		border-image-outset: initial;
+		border-image-repeat: initial;
+		font-size:30px;
+		color:blue;
+		
+	}
+	detail{
+		padding:10px;
+	}
+	title1{
+		display:block;
+		margin-left:20px;
+		color:blue;
+	}
+	detail1{
+		
+	}
+	value{
+		display:block;
+		margin-left:50px;
+	}
+	.left{
+		padding-right:20px;
+		color:blue;
+	}
+	#red{
+		color:red;
+		font-size:30px;
+	}
+	.box{
+		width: 250px!important;
+	}
+	.box:hover{
+		cursor:pointer;
+	}
+	.text{
+		margin-left: 60px;
+	}
+	.text1{
+		display:block;
+		color:blue;
+	}
+	.text2{
+		display:block;
+		color:red;
+	}
+	.text3{
+		display:block;
+		font-weight:bold;
+	}
+	#project_title{
+		font-size:30px;
+		color:blue;
+		font-weight:bold;
+		text-align:center;
+	}
+	.delete, .extend_one, .extend_more{
+		text-decoration: none;
+		border: 1px solid;
+		color: green;
+		border-radius: 5px;
+		padding-left: 3px;
+		padding-right: 3px;
+		background-color: gainsboro;
+	}
+	#done,#back,#search{
+		margin-top:5px;
+	}
+	.singleElement, .complexElement{
+		margin:4px;
+	}
+	
+</style>
+
+<script language="javascript">
+		
+		function parseDOM(element){
+			var tag="";
+			var elements;
+			var textNode;
+			var inputElement;
+			var keyElement;
+			var bigKeyElement;
+			var valueElement;
+			var elementLength;
+			var i=0;
+			
+			elementLength = element.children('fieldset').length;
+			
+			//Neu la singleElement
+			if(elementLength == 0 ){
+				inputElement = element.children('input');
+				if(inputElement.length ==2){
+					keyElement = inputElement.eq(0);
+					valueElement = inputElement.eq(1);
+					
+					tag = "<xs:element name=\""+keyElement.val()+"\">"+
+							"<xs:complexType>"+
+						      "<xs:sequence>"+
+						        "<xs:element name=\""+valueElement.val()+"\" type=\"xs:string\"/>"+
+						      "</xs:sequence>"+
+						    "</xs:complexType>"+
+						  "</xs:element>";					
+					
+					return tag;
+				}
+				else{
+					return "";
+				}
+					
+			}else{	//Neu la complexElement
+				elements = element.children().eq(0).children('div');
+            	elementsLength = elements.length;
+            	
+            	bigKeyElement=element.children().eq(0).children().eq(0).children().eq(0);
+            	//tag = document.createElement(bigKeyElement.val());
+            	
+			    for(i=0; i<elementsLength; i++){
+          		    // Lay lan luot cac the div
+          		    var child = elements.eq(i);
+          		    tag+=parseDOM(child);
+          	  	}
+			    
+			    //tag = "<"+bigKeyElement.val()+">"+tag+"</"+bigKeyElement.val()+">";
+			    	 tag="<xs:element name=\""+bigKeyElement.val()+"\">"+
+							"<xs:complexType>"+
+						      "<xs:sequence>"+
+						        tag+
+						      "</xs:sequence>"+
+						    "</xs:complexType>"+
+						  "</xs:element>";
+			    
+			    return tag;
+			}
+		}
+
+          $(document).ready(function(){
+             $("#back").hide();
+             $("#search").hide();
+
+             $("#container").on('click', 'span.delete', function(){
+                 $(this).parent().remove();
+             });
+             $("#container").on('click', 'span.extend_one', function(){
+                  var tag="<div class='singleElement'>"+
+							"<input type='text' class='key' size='4'>"+
+							"<input type='text' class='value'>"+
+							"<span class='delete'>Delete</span> <br>"+
+						  "</div>";
+                  $(this).before(tag);
+             });
+             $("#container").on('click','span.extend_more', function(){
+                  var tag="<div class='complexElement'>"+
+								"<fieldset>"+
+									"<legend>"+
+										"<input type='text' class='key' size='6'>"+
+									"</legend>"+
+				
+									"<div class='singleElement'>"+
+										"<input type='text' class='key' size='4'>"+
+										"<input type='text' class='value'>"+
+										"<span class='delete'>Delete</span> <br>"+
+									"</div>"+
+									"<div class='singleElement'>"+
+										"<input type='text' class='key' size='4'>"+
+										"<input type='text' class='value'>"+
+										"<span class='delete'>Delete</span> <br>"+
+									"</div>"+
+									"<div class='singleElement'>"+
+										"<input type='text' class='key' size='4'>"+
+										"<input type='text' class='value'>"+
+										"<span class='delete'>Delete</span> <br>"+
+									"</div>"+
+							
+									"<span class='extend_one'>Extend one</span>"+
+									"<span class='extend_more'>Extend more</span>"+
+									"<span class='delete'>Delete</span>"+
+								"</fieldset>"+
+						  "</div>";
+
+                  $(this).prev().before(tag);
+             });
+
+              $("#done").click(function(){
+                  $(".delete").hide();
+                  $(".extend_one").hide();
+                  $(".extend_more").hide();
+                  $("input").css("disabled","disabled");
+                  $("#back").show();
+                  $("#search").show();
+                  $("#done").hide();
+              });
+
+              $("#back").click(function(){
+                  $("#back").hide();
+                  $("#search").hide();
+                  $("#done").show();
+                  $(".delete").show();
+                  $(".extend_one").show();
+                  $(".extend_more").show();
+                  $("input").css("disabled","false");
+              });
+
+              $("#search").click(function(){
+            	  var xmlDOM=null;
+            	  var openTag=null;
+            	  var endTag=null;
+            	  
+                  $(".delete").remove();
+                  $(".extend_one").remove();
+                  $(".extend_more").remove();
+                  $("br").remove();
+                  
+                  
+                  openTag="<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"+
+                  "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">";
+                  endTag="</xs:schema>";
+                  xmlDOM=openTag+parseDOM($('#mainContent'))+endTag;
+                 
+                  console.log(xmlDOM);
+                  
+                  
+                  $.ajax({
+                	  url: 'coma.jsp',
+                	  dataType:'json',
+                	  data:{'data':xmlDOM},
+                	  success:function(result){
+                	
+                		  var id1 = result.product1.split("&")[0];
+                		  var id2 = result.product2.split("&")[0];
+                		  var id3 = result.product3.split("&")[0];
+                		  var id4 = result.product4.split("&")[0];
+                		  var id5 = result.product5.split("&")[0];
+                		  var id6 = result.product6.split("&")[0];
+                		  
+                		  
+                		  //Get product
+                		  $.ajax({
+                        	  url: 'getProduct.jsp',
+                        	  dataType:'json',
+                        	  data:{
+                        		  'id1':id1,
+                        		  'id2':id2,
+                        		  'id3':id3,
+                        		  'id4':id4,
+                        		  'id5':id5,
+                        		  'id6':id6
+                        	  },
+                        	  success:function(result1){
+                        		  //product1
+                        		  var product1_id = result1.product1.split("&")[0];
+                        		  var product1_name = result1.product1.split("&")[1];
+                        		  var product1_image = result1.product1.split("&")[2];
+                        		  var product1_price = result1.product1.split("&")[3];
+                        		  var product1_brand = result1.product1.split("&")[4];
+                        		  var product1_content = result1.product1.split("&")[5];
+                        		                          		  
+                        		  //Add html to page
+                        		  //main product
+                        		  var image_dislay = "<img src='"+product1_image+"' height='300' width='200'/>";
+                        		  $("#primary_display_left").html(image_dislay);
+                        		  
+                        		  var name= "<level1><span class='left'>Name:</span>"+product1_name+"</level1>";
+                        		  var price= "<level1><span class='left'>Price:</span><span id=red>"+product1_price+"</span></level1>";
+                        		  var brand= "<level1><span class='left'>Brand:</span>"+product1_brand+"</level1>";
+                        		  name = name.concat(price);
+                        		  name = name.concat(brand);
+                        		  $("#primary_display_right").html(name);
+                		  
+                        		  var content = $(product1_content);
+                        		  var content_string ="";
+                        		  
+                        		  var options = content.children('options').eq(0);
+                        		  content_string +="<options><title>Product detail</title>";
+                        		  content_string +="<detail>";
+                        		  for(var i=0;i<options.children().length;i++){
+                        			  var opt=options.children().eq(i);
+                        			  var opt_name = opt.children().eq(0);
+                        			  content_string +="<title1>"+opt_name.text()+"</title1>";
+                        			  var opt_values=opt.children().eq(1);
+                        			  content_string +="<detail1>";
+                        			  for(var j=0;j<opt_values.children().length;j++){
+                        				  var opt_value = opt_values.children().eq(j);
+                        				  content_string +="<value>"+opt_value.text()+"</value>";
+                        			  }
+                        			  content_string +="</detail1>";
+                        		  }
+                        		  content_string +="</detail></options>";
+                        		  $("#primary_display_center").html(content_string);
+                        		  
+                        		  //5 next product
+                        		   //product 2
+                        		  var product2_id = result1.product2.split("&")[0];
+                        		  var product2_name = result1.product2.split("&")[1];
+                        		  var product2_image = result1.product2.split("&")[2];
+                        		  var product2_price = result1.product2.split("&")[3];
+                        		  var product2_brand = result1.product2.split("&")[4];
+                        			//product 3
+                        		  var product3_id = result1.product3.split("&")[0];
+                        		  var product3_name = result1.product3.split("&")[1];
+                        		  var product3_image = result1.product3.split("&")[2];
+                        		  var product3_price = result1.product3.split("&")[3];
+                        		  var product3_brand = result1.product3.split("&")[4];
+                        			//product 4
+                        		  var product4_id = result1.product4.split("&")[0];
+                        		  var product4_name = result1.product4.split("&")[1];
+                        		  var product4_image = result1.product4.split("&")[2];
+                        		  var product4_price = result1.product4.split("&")[3];
+                        		  var product4_brand = result1.product4.split("&")[4];
+                        			//product 5
+                        		  var product5_id = result1.product5.split("&")[0];
+                        		  var product5_name = result1.product5.split("&")[1];
+                        		  var product5_image = result1.product5.split("&")[2];
+                        		  var product5_price = result1.product5.split("&")[3];
+                        		  var product5_brand = result1.product5.split("&")[4];
+                        			//product 6
+                        	      var product6_id = result1.product6.split("&")[0];
+                        		  var product6_name = result1.product6.split("&")[1];
+                        		  var product6_image = result1.product6.split("&")[2];
+                        		  var product6_price = result1.product6.split("&")[3];
+                        		  var product6_brand = result1.product6.split("&")[4];
+                        
+                        		  
+                        		  var next_product=
+                        		  "<div style='margin:0 auto; width: 900px; height:500px;'>"+
+                        		  "<a class='prev browse left disabled'></a>"+
+                        		  "<div class='scrollable' id='scrollable'>"+
+                        		    "<div class='items'>"+
+                        		      "<div>"+
+                        		     	 "<div class='box' id='"+product1_id+"'>"+
+		                  		        	"<img src='"+product1_image+"' width='300px' height='400px'>"+
+		                  		        	"<div class='text'>"+
+		                  		        		"<span class='text1'>"+product1_name+"</span>"+
+		                  		        		"<span class='text2'>Price: "+product1_price+"</span>"+
+		                  		        		"<span class='text3'>Brand: "+product1_brand+"</span>"+
+		                  		        	"</div>"+
+                  		       			"</div>"+
+                        		      	"<div class='box' id='"+product2_id+"'>"+
+                        		        	"<img src='"+product2_image+"' width='300px' height='400px'>"+
+                        		        	"<div class='text'>"+
+                        		        		"<span class='text1'>"+product2_name+"</span>"+
+                        		        		"<span class='text2'>Price: "+product2_price+"</span>"+
+                        		        		"<span class='text3'>Brand: "+product2_brand+"</span>"+
+                        		        	"</div>"+
+                        		        "</div>"+
+                        		        "<div class='box' id='"+product3_id+"'>"+
+                        		        	"<img src='"+product3_image+"' width='300px' height='400px'>"+
+                        		        	"<div class='text'>"+
+                        		        		"<span class='text1'>"+product3_name+"</span>"+
+                        		        		"<span class='text2'>Price: "+product3_price+"</span>"+
+                        		        		"<span class='text3'>Brand: "+product3_brand+"</span>"+
+                        		        	"</div>"+
+                        		        "</div>"+
+                        		      "</div>"+
+                        		    "<div>"+
+                        		      "<div class='box' id='"+product4_id+"'>"+
+	                  		        	"<img src='"+product4_image+"' width='300px' height='400px'>"+
+	                  		        	"<div class='text'>"+
+	                  		        		"<span class='text1'>"+product4_name+"</span>"+
+	                  		        		"<span class='text2'>Price: "+product4_price+"</span>"+
+	                  		        		"<span class='text3'>Brand: "+product4_brand+"</span>"+
+	                  		        	"</div>"+
+                  		        	 "</div>"+
+	                  		         "<div class='box' id='"+product5_id+"'>"+
+	                  		        	"<img src='"+product5_image+"' width='300px' height='400px'>"+
+	                  		        	"<div class='text'>"+
+	                  		        		"<span class='text1'>"+product5_name+"</span>"+
+	                  		        		"<span class='text2'>Price: "+product5_price+"</span>"+
+	                  		        		"<span class='text3'>Brand: "+product5_brand+"</span>"+
+	                  		        	"</div>"+
+	                  		         "</div>"+
+	                  		         "<div class='box' id='"+product6_id+"'>"+
+	                  		        	"<img src='"+product6_image+"' width='300px' height='400px'>"+
+	                  		        	"<div class='text'>"+
+	                  		        		"<span class='text1'>"+product6_name+"</span>"+
+	                  		        		"<span class='text2'>Price: "+product6_price+"</span>"+
+	                  		        		"<span class='text3'>Brand: "+product6_brand+"</span>"+
+	                  		         	"</div>"+
+                  		        	"</div>"+
+                        		   "</div>"+
+                        		  "</div>"+
+                        		  "</div>"+
+                        		  "<a class='next browse right'></a>"+
+                        		  "</div>";
+                        		  
+                        		  $("#secondary_display").html(next_product);
+                        		  $(".scrollable").scrollable();
+                        	
+                        	  },
+                        	  error:function(){
+                        		  alert('Error!!!');
+                        	  }
+                          });
+                		  
+                	  },
+                	  error:function(){
+                		  alert('Error!!!');
+                	  }
+                  });
+                  
+                   
+              });
+              
+              
+              // Get secondary product to primary product
+              $("#secondary_display").on('click', 'div.box', function(){
+                 var id=$(this).attr('id');
+                 
+	               //Get product
+	       		  $.ajax({
+	               	  url: 'getProduct1.jsp',
+	               	  dataType:'json',
+	               	  data:{
+	               		  'id':id
+	               	  },
+	               	  success:function(result2){
+	               		  //product
+	               		  var product_id = result2.product.split("&")[0];
+	               		  var product_name = result2.product.split("&")[1];
+	               		  var product_image = result2.product.split("&")[2];
+	               		  var product_price = result2.product.split("&")[3];
+	               		  var product_brand = result2.product.split("&")[4];
+	               		  var product_content = result2.product.split("&")[5];
+	               		                          		  
+	               		  //Add html to page
+	               		  //main product
+	               		  var image_dislay = "<img src='"+product_image+"' height='300' width='200'/>";
+	               		  $("#primary_display_left").html(image_dislay);
+	               		  
+	               		  var name= "<level1><span class='left'>Name:</span>"+product_name+"</level1>";
+	               		  var price= "<level1><span class='left'>Price:</span><span id=red>"+product_price+"</span></level1>";
+	               		  var brand= "<level1><span class='left'>Brand:</span>"+product_brand+"</level1>";
+	               		  name = name.concat(price);
+	               		  name = name.concat(brand);
+	               		  $("#primary_display_right").html(name);
+	       		  
+	               		  var content = $(product_content);
+	               		  var content_string ="";
+	               		  
+	               		  var options = content.children('options').eq(0);
+	               		  content_string +="<options><title>Product detail</title>";
+	               		  content_string +="<detail>";
+	               		  for(var i=0;i<options.children().length;i++){
+	               			  var opt=options.children().eq(i);
+	               			  var opt_name = opt.children().eq(0);
+	               			  content_string +="<title1>"+opt_name.text()+"</title1>";
+	               			  var opt_values=opt.children().eq(1);
+	               			  content_string +="<detail1>";
+	               			  for(var j=0;j<opt_values.children().length;j++){
+	               				  var opt_value = opt_values.children().eq(j);
+	               				  content_string +="<value>"+opt_value.text()+"</value>";
+	               			  }
+	               			  content_string +="</detail1>";
+	               		  }
+	               		  content_string +="</detail></options>";
+	               		  $("#primary_display_center").html(content_string);
+	               	  }
+	            	 });  
+	               //bacck to top
+	               document.getElementById('project_title').scrollIntoView();
+              
+          		});
+ 		 });
+      </script>
+</head>
+<body>
+	<div id="project_title">XML Schema Matching and Application in Objects Searching</div>
+	<div id="container">
+		<form name="searchForm" action="#" method="POST" id="searchForm">
+		
+		   <div id='mainContent'>
+			<fieldset>
+					<legend>
+						<input type='text' class='key' value="product" size='6'>
+					</legend>
+
+				
+					<div class='singleElement'>
+						<input type='text' class='key' size='4'>
+						<input type='text' class='value'>
+						<span class='delete'>Delete</span> <br>
+					</div>
+
+
+					<div class='complexElement'>
+						<fieldset>
+							<legend>
+								<input type='text' class='key' size='6'>
+							</legend>
+
+							<div class='singleElement'>
+								<input type='text' class='key' size='4'>
+								<input type='text' class='value'>
+								<span class='delete'>Delete</span> <br>
+							</div>
+							<div class='singleElement'>
+								<input type='text' class='key' size='4'>
+								<input type='text' class='value'>
+								<span class='delete'>Delete</span> <br>
+							</div>
+							<div class='singleElement'>
+								<input type='text' class='key' size='4'>
+								<input type='text' class='value'>
+								<span class='delete'>Delete</span> <br>
+							</div>
+					
+							<span class='extend_one'>Extend one</span>
+							<span class='extend_more'>Extend more</span>
+							<span class='delete'>Delete</span>
+						</fieldset>
+					</div>
+
+					<span class='extend_one'>Extend one</span> 
+					<span class='extend_more'>Extend more</span>
+
+				
+			  </fieldset>
+			  </div>
+
+			<div id="submit">
+				<input type="button" name="doneButton" id="done" value="Done">
+				<input type="button" name="backButton" id="back" value="Back">
+				<input type="button" name="searchButton" id="search" value="Search">
+			</div>
+		</form>
+	</div>
+	<div id="display_product">
+		<div id="primary_display">
+			<div id="primary_display_left"></div>
+			<div id="primary_display_right"></div>
+			<div id="primary_display_center"></div>
+		</div>
+		<div id="secondary_display">
+			
+		</div>
+	</div>
+</body>
+</html>
