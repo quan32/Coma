@@ -36,7 +36,7 @@
 	ResultSet rs = stmt.executeQuery(sql);
 	while(rs.next()){
         id  = rs.getInt("id");
-        name = rs.getString("name");
+        name = rs.getString("fullname");
         image = rs.getString("image");
         image = "images/"+image;
         price = rs.getString("price");
@@ -46,7 +46,7 @@
     	
     	try {
     		String sCurrentLine;
-    		br = new BufferedReader(new FileReader("C:\\Users\\NTQuan\\workspace\\Coma\\xml\\schema2.xml"));
+    		br = new BufferedReader(new FileReader("C:\\Users\\NTQuan\\workspace\\Coma\\xml\\schema"+id+".xml"));
     	
     		while ((sCurrentLine = br.readLine()) != null) {
     			//out.println(sCurrentLine);
@@ -71,11 +71,12 @@
 	rs = stmt.executeQuery(sql);
 	while (rs.next()) {
 		id = rs.getInt("id");
-		name = rs.getString("name");
+		name = rs.getString("fullname");
 		image = rs.getString("image");
 		image = "images/" + image;
 		price = rs.getString("price");
 		brand = rs.getString("brand");
+		
 
 		json.put("product2", id + "&" + name + "&" + image + "&"
 				+ price + "&" + brand);
@@ -85,7 +86,7 @@
 	rs = stmt.executeQuery(sql);
 	while (rs.next()) {
 		id = rs.getInt("id");
-		name = rs.getString("name");
+		name = rs.getString("fullname");
 		image = rs.getString("image");
 		image = "images/" + image;
 		price = rs.getString("price");
@@ -99,7 +100,7 @@
 	rs = stmt.executeQuery(sql);
 	while (rs.next()) {
 		id = rs.getInt("id");
-		name = rs.getString("name");
+		name = rs.getString("fullname");
 		image = rs.getString("image");
 		image = "images/" + image;
 		price = rs.getString("price");
@@ -113,7 +114,7 @@
 	rs = stmt.executeQuery(sql);
 	while (rs.next()) {
 		id = rs.getInt("id");
-		name = rs.getString("name");
+		name = rs.getString("fullname");
 		image = rs.getString("image");
 		image = "images/" + image;
 		price = rs.getString("price");
@@ -127,7 +128,7 @@
 	rs = stmt.executeQuery(sql);
 	while (rs.next()) {
 		id = rs.getInt("id");
-		name = rs.getString("name");
+		name = rs.getString("fullname");
 		image = rs.getString("image");
 		image = "images/" + image;
 		price = rs.getString("price");

@@ -13,7 +13,7 @@
 	Connection con;
 	String url = "jdbc:mysql://localhost/coma-project";
 	int id;
-	String name, image, price, brand, content="";
+	String name, image, price, brand, fullname, content="";
 	JSONObject json = new JSONObject();
 	
 	
@@ -31,7 +31,7 @@
 	ResultSet rs = stmt.executeQuery(sql);
 	while(rs.next()){
         id  = rs.getInt("id");
-        name = rs.getString("name");
+        name = rs.getString("fullname");
         image = rs.getString("image");
         image = "images/"+image;
         price = rs.getString("price");
@@ -41,7 +41,7 @@
     	
     	try {
     		String sCurrentLine;
-    		br = new BufferedReader(new FileReader("C:\\Users\\NTQuan\\workspace\\Coma\\xml\\schema1.xml"));
+    		br = new BufferedReader(new FileReader("C:\\Users\\NTQuan\\workspace\\Coma\\xml\\schema"+id+".xml"));
     	
     		while ((sCurrentLine = br.readLine()) != null) {
     			//out.println(sCurrentLine);
