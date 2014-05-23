@@ -35,39 +35,39 @@ public class Coma {
 	static final String USER = "root";
 	static final String PASS = "20092137";
 	
-//	public static void main(String[] args){
-//		Coma coma = new Coma();
-//		Result[] result = new Result[6];
-//		
-//		System.out.println("--------------- Result:\n\n\n");
-//		result = coma.match1("product.xsd");
-//		for(int i=0;i<6;i++){
-//			System.out.println("product"+(i+1));
-//			System.out.println("ID:"+result[i].getId());
-//			System.out.println("Value:"+result[i].getValue()+"\n");
-//		}
-//	}
-	
 	public static void main(String[] args){
-	Coma coma = new Coma();
-	MatchResult result;
+		Coma coma = new Coma();
+		Result[] result = new Result[6];
+		
+		System.out.println("--------------- Result:\n\n\n");
+		result = coma.match1("sources/product.xsd","PO_abbrevs.txt", "PO_syns.txt");
+		for(int i=0;i<6;i++){
+			System.out.println("product"+(i+1));
+			System.out.println("ID:"+result[i].getId());
+			System.out.println("Value:"+result[i].getValue()+"\n");
+		}
+	}
 	
-	System.out.println("--------------- Result:\n\n\n");
-	result = coma.matchModelsDefault("sources/example1.xsd", "sources/example2.xsd", "PO_abbrevs.txt", "PO_syns.txt");
-	System.out.println(result);
+//	public static void main(String[] args){
+//	Coma coma = new Coma();
+//	MatchResult result;
+//	
+//	System.out.println("--------------- Result:\n\n\n");
+//	result = coma.matchModelsDefault("sources/example1.xsd", "sources/example2.xsd", "PO_abbrevs.txt", "PO_syns.txt");
+//	System.out.println(result);
 	
-}
+//}
 	
 	
 	
-	public Result[] match1(String schema){
+	public Result[] match1(String fileSrc, String fileAbbreviations, String fileSynonyms){
 		
 		Connection conn=null;
 		Statement stmt = null;
 		int tmp=0,i=0,j=0,k=0, l=0;
 		float matchResult=0.0f;
-		String sourceSchemaPath="";
-		String targetSchemaPath="";
+//		String sourceSchemaPath="";
+		String fileTrg="",var="";
 		Result tmp1, tmp2;
 		Result[] result = new Result[6];
 		
@@ -78,9 +78,32 @@ public class Coma {
 		}
 		
 		
-		sourceSchemaPath = "C:\\Users\\NTQuan\\workspace\\Coma\\sources\\"+schema;
+//		sourceSchemaPath = "C:\\Users\\NTQuan\\workspace\\Coma\\sources\\"+fileSrc;
 		
-		Coma coma = new Coma();
+//		Coma coma = new Coma();
+		Graph graphSrc = loadGraph(fileSrc, null);
+		
+		// load abbreviations to lists
+ 		ListParser parser = new ListParser(false);
+ 		parser.parseSingleSource(fileAbbreviations);
+ 		ArrayList<String> abbrevList = parser.getList1();
+ 		ArrayList<String> fullFormList =  parser.getList2();
+ 		// load synonyms to lists		
+ 		parser.parseSingleSource(fileSynonyms);
+ 		ArrayList<String> wordList = parser.getList1();
+ 		ArrayList<String> synonymList = parser.getList2();
+ 		
+ 		// init ExecWorkflow with abbreviatons and synonyms
+ 		ExecWorkflow exec = new ExecWorkflow(abbrevList, fullFormList, wordList, synonymList);
+ 		Strategy strategy = new Strategy(Strategy.COMA_OPT);
+ 		graphSrc = graphSrc.getGraph(Graph.PREP_SIMPLIFIED);
+ 		
+ 		Workflow workflow = new Workflow();		
+ 		
+ 		workflow.setSource(graphSrc);
+// 		workflow.setTarget(graphTrg);
+ 		workflow.setBegin(strategy);
+ 		workflow.setUseSynAbb(true);
 		
 		try{
 			Class.forName(JDBC_DRIVER);
@@ -101,11 +124,62 @@ public class Coma {
 				 
 		         int id  = rs.getInt("id");
 		         String name = rs.getString("name");
-		         targetSchemaPath="C:\\Users\\NTQuan\\workspace\\Coma\\sources\\"+name;
+//		         targetSchemaPath="C:\\Users\\NTQuan\\workspace\\Coma\\sources\\"+name;
+		         fileTrg="sources/"+name;
 		         
 		         //matching
-		         matchResult=coma.match(sourceSchemaPath, targetSchemaPath);
-//		         System.out.println("Result"+id+":"+coma.match(sourceSchemaPath, targetSchemaPath));
+//		         matchResult=coma.match(sourceSchemaPath, targetSchemaPath);
+		         
+		         
+		         
+		         
+//		        Graph graphSrc = loadGraph(fileSrc, null);
+		 		Graph graphTrg = loadGraph(fileTrg, null);
+		 		
+//		 		// load abbreviations to lists
+//		 		ListParser parser = new ListParser(false);
+//		 		parser.parseSingleSource(fileAbbreviations);
+//		 		ArrayList<String> abbrevList = parser.getList1();
+//		 		ArrayList<String> fullFormList =  parser.getList2();
+//		 		// load synonyms to lists		
+//		 		parser.parseSingleSource(fileSynonyms);
+//		 		ArrayList<String> wordList = parser.getList1();
+//		 		ArrayList<String> synonymList = parser.getList2();
+//		 		
+//		 		// init ExecWorkflow with abbreviatons and synonyms
+//		 		ExecWorkflow exec = new ExecWorkflow(abbrevList, fullFormList, wordList, synonymList);
+//		 		Strategy strategy = new Strategy(Strategy.COMA_OPT);
+//		 		graphSrc = graphSrc.getGraph(Graph.PREP_SIMPLIFIED);
+		 		graphTrg = graphTrg.getGraph(Graph.PREP_SIMPLIFIED);
+		 		
+//		 		Workflow workflow = new Workflow();		
+//		 		
+//		 		workflow.setSource(graphSrc);
+		 		workflow.setTarget(graphTrg);
+//		 		workflow.setBegin(strategy);
+//		 		workflow.setUseSynAbb(true);
+		 		MatchResult[] results =  exec.execute(workflow);
+		 		if (results==null){
+		 			System.err.println("COMA_API.matchModelsDefault results unexpected null");
+		 			return null;
+		 		}
+		 		if (results.length>1){
+		 			System.err.println("COMA_API.matchModelsDefault results unexpected more than one, only first one returned");
+		 		}
+		         
+		         
+		         
+		         
+		         
+		         
+		 		var=results[0].toString();
+				var=var.substring(var.indexOf("product <-> product:"));
+				var=var.replaceAll("^.*product:", "");
+				matchResult=Float.parseFloat(var.substring(0, var.indexOf("+")));
+		         
+		         
+		         
+		         
 		         j=0;
 		         tmp=0;
 		         for(j=5;j>=0;j--){
