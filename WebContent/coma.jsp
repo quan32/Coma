@@ -52,12 +52,13 @@
 %>
 <% 
 	String info=request.getParameter("data");
+	int price = Integer.parseInt(request.getParameter("price"));
 	createXsd(info);
 	
 	Result[] result = new Result[6];
 	JSONObject json = new JSONObject();
 	
-	result = coma.match();
+	result = coma.match(price);
 	for(int i=0;i<6;i++){
 		json.put("product"+(i+1), result[i].getId()+"&"+result[i].getValue());
 	}

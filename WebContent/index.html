@@ -285,18 +285,24 @@
                   $("br").remove();
                   
                   
+                  //get requirements
                   openTag="<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"+
                   "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">";
                   endTag="</xs:schema>";
                   xmlDOM=openTag+parseDOM($('#mainContent'))+endTag;
                  
-                  console.log(xmlDOM);
+                  //get price
+                  var price = $("#price").val();
+                  //console.log(price);
                   
                   
                   $.ajax({
                 	  url: 'coma.jsp',
                 	  dataType:'json',
-                	  data:{'data':xmlDOM},
+                	  data:{
+                		  'data':xmlDOM,
+                		  'price':price
+                		  },
                 	  success:function(result){
                 	
                 		  var id1 = result.product1.split("&")[0];
@@ -549,8 +555,8 @@
 
 				
 					<div class='singleElement'>
-						<input type='text' class='key' size='4'>
-						<input type='text' class='value'>
+						<input type='text' class='key' size='4' value="price">
+						<input type='text' class='value' id="price">
 						<span class='delete'>Delete</span> <br>
 					</div>
 

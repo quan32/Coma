@@ -25,6 +25,7 @@ import de.wdilab.coma.structure.Source;
 public class Coma {
 	
 	public static final String DIR="C:\\Users\\NTQuan\\workspace\\Coma\\";
+	public static final int MATCH_MAX_NUMBER=6;
 	
 	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
 	static final String DB_URL = "jdbc:mysql://localhost/coma-project";
@@ -45,27 +46,33 @@ public class Coma {
 //		}
 //	}
 	
-	public Result[] match(){
+	public Result[] match(int price){
 		Coma coma = new Coma();
 		
-		return coma.match1(DIR+"sources\\product.xsd",DIR+"PO_abbrevs.txt", DIR+"PO_syns.txt");
+		return coma.match1(price,DIR+"sources\\product.xsd",DIR+"PO_abbrevs.txt", DIR+"PO_syns.txt");
 	}
 
 	
-	public Result[] match1(String fileSrc, String fileAbbreviations, String fileSynonyms){
+	public Result[] match1(int price, String fileSrc, String fileAbbreviations, String fileSynonyms){
 		
 		Connection conn=null;
 		Statement stmt = null;
-		int tmp=0,i=0,j=0,k=0, l=0;
-		float matchResult=0.0f;
+		int tmp=0,i=0,j=0,k=0, l=0, cost=0, ab=0;
+		float matchResult=0.0f, ratio=0.0f;
 		String fileTrg="",var="";
 		Result tmp1, tmp2;
+		Product mp1, mp2;
 		Result[] result = new Result[6];
+		Product top[] = new Product[MATCH_MAX_NUMBER];
 		
 		
-		//init array
+		//init array Result
 		for(i=0;i<6;i++){
 			result[i] = new Result();
+		}
+		//init array top
+		for(i=0;i<MATCH_MAX_NUMBER;i++){
+			top[i] = new Product();
 		}
 		
 		
@@ -105,69 +112,53 @@ public class Coma {
 			String sql = "SELECT * FROM products";
 			ResultSet rs = stmt.executeQuery(sql);
 			
+			
+			System.out.println("\n\n\nList:\n\n\n");
+			//get MATCH_MAX_NUMBER schema
 			while(rs.next()){
-				 //bien de gioi han so luong matching
-				 if(l==20)
-					 break;
-				 else
-					 l++;
-				 
-				 
-		         int id  = rs.getInt("id");
+				 int id  = rs.getInt("id");
 		         String name = rs.getString("name");
-		         fileTrg=DIR+"sources\\"+name;
-		         
-		         //Load graph2 and matching
-		 		Graph graphTrg = loadGraph(fileTrg, null);
-		 		graphTrg = graphTrg.getGraph(Graph.PREP_SIMPLIFIED);
-		 		workflow.setTarget(graphTrg);
-		 		MatchResult[] results =  exec.execute(workflow);
-		 		if (results==null){
-		 			System.err.println("COMA_API.matchModelsDefault results unexpected null");
-		 			return null;
-		 		}
-		 		if (results.length>1){
-		 			System.err.println("COMA_API.matchModelsDefault results unexpected more than one, only first one returned");
-		 		}
-		         
-		         
-		        //get matching result of 2 schemas
-		 		var=results[0].toString();
-				var=var.substring(var.indexOf("product <-> product:"));
-				var=var.replaceAll("^.*product:", "");
-				matchResult=Float.parseFloat(var.substring(0, var.indexOf("+")));
-		         
-		         
-		        
-		         //get list 6 good results
+//		         fileTrg=DIR+"sources\\"+name;
+				 cost = Integer.parseInt(rs.getString("price"));
+				 ab=price-cost;
+				 ab=Math.abs(ab);
+				 if(price!=0)
+					 ratio = (float)ab/price;
+				 else
+					 ratio = 1.0f;
+//				 System.out.println("Ratio:"+ratio+"    ID:"+id+"    price:"+price+"    cost:"+cost+"    ab:"+ab);
+				 
+				//get list MATCH_MAX_NUMBER product by price
 		         j=0;
 		         tmp=0;
-		         for(j=5;j>=0;j--){
-		        	 if(matchResult < result[j].getValue())
+		         for(j=MATCH_MAX_NUMBER-1;j>=0;j--){
+		        	 if(ratio > top[j].getRatio())
 		        		 break;
 		        	 else
 		        		 tmp++;
 		         }
 		         if(tmp>0){
-		        	 if(tmp==6){
-		        		 tmp1 = new Result(id, matchResult);
-			        	 for(k=0;k<6;k++){
-			        		 tmp2 = result[k];
-			        		 result[k]=tmp1;
-			        		 tmp1=tmp2;
+		        	 if(tmp==MATCH_MAX_NUMBER){
+		        		 mp1 = new Product(id, ratio, name);
+			        	 for(k=0;k<MATCH_MAX_NUMBER;k++){
+			        		 mp2 = top[k];
+			        		 top[k]=mp1;
+			        		 mp1=mp2;
 			        	 }
 		        	 }else{
-		        		 tmp1 = new Result(id, matchResult);
-			        	 for(k=j+1;k<6;k++){
-			        		 tmp2 = result[k];
-			        		 result[k]=tmp1;	 
-			        		 tmp1=tmp2;
+		        		 mp1 = new Product(id, ratio, name);
+			        	 for(k=j+1;k<MATCH_MAX_NUMBER;k++){
+			        		 mp2 = top[k];
+			        		 top[k]=mp1;	 
+			        		 mp1=mp2;
 			        	 }
 		        	 }
 		        	 
 		         }
+				 
 		         
 		      }
+			
 		      rs.close();
 			
 		}catch(SQLException se){
@@ -185,6 +176,67 @@ public class Coma {
 		}catch(SQLException se){
 			se.printStackTrace();
 		}
+		
+		
+		
+		//matching with MATCH_MAX_NUMBER schema
+        l=0;
+        for(l=0;l<MATCH_MAX_NUMBER;l++){
+       	 fileTrg=DIR+"sources\\"+top[l].getName();
+       	 
+       	//Load graph2 and matching
+		 		Graph graphTrg = loadGraph(fileTrg, null);
+		 		graphTrg = graphTrg.getGraph(Graph.PREP_SIMPLIFIED);
+		 		workflow.setTarget(graphTrg);
+		 		MatchResult[] results =  exec.execute(workflow);
+		 		if (results==null){
+		 			System.err.println("COMA_API.matchModelsDefault results unexpected null");
+		 			return null;
+		 		}
+		 		if (results.length>1){
+		 			System.err.println("COMA_API.matchModelsDefault results unexpected more than one, only first one returned");
+		 		}
+		         
+		         //print maching result
+		 		System.out.println("Schema"+l+":"+results[0]);
+		 		
+		        //get matching result of 2 schemas
+		 		var=results[0].toString();
+				var=var.substring(var.indexOf("product <-> product:"));
+				var=var.replaceAll("^.*product:", "");
+				matchResult=Float.parseFloat(var.substring(0, var.indexOf("+")));
+		         
+		        
+		         //get list 6 good results
+		         j=0;
+		         tmp=0;
+		         for(j=5;j>=0;j--){
+		        	 if(matchResult < result[j].getValue())
+		        		 break;
+		        	 else
+		        		 tmp++;
+		         }
+		         if(tmp>0){
+		        	 if(tmp==6){
+		        		 tmp1 = new Result(top[l].getId(), matchResult);
+			        	 for(k=0;k<6;k++){
+			        		 tmp2 = result[k];
+			        		 result[k]=tmp1;
+			        		 tmp1=tmp2;
+			        	 }
+		        	 }else{
+		        		 tmp1 = new Result(top[l].getId(), matchResult);
+			        	 for(k=j+1;k<6;k++){
+			        		 tmp2 = result[k];
+			        		 result[k]=tmp1;	 
+			        		 tmp1=tmp2;
+			        	 }
+		        	 }
+		        	 
+		         }
+        }
+		
+		
 		
 		
 		return result;
